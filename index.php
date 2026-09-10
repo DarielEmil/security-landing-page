@@ -3,7 +3,7 @@ $site = [
     'name' => 'Dariel Rodriguez',
     'title' => 'Seguridad De La Información',
     'subtitle' => 'Página web de prueba HTTPS, puertos y servidor HTTP',
-    'image' => 'assets/hero.jpg',
+    'image' => 'assets/personal-photo.jpg',
     'image_alt' => 'Imagen De Perfil',
 ];
 ?>

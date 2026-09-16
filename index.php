@@ -110,6 +110,7 @@ $site = [
             <div class="hero-text">
                 <h1><?= htmlspecialchars($site['title']) ?></h1>
                 <p><?= htmlspecialchars($site['subtitle']) ?></p>
+                <a class="btn" href="usuarios.php">Ver usuarios</a>
             </div>
             <img class="hero-image"
                  src="<?= htmlspecialchars($site['image']) ?>"

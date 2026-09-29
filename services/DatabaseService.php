@@ -174,6 +174,20 @@ final class DatabaseService
         return array_map(static fn (array $row): string => (string) $row[$column], $statement->fetchAll());
     }
 
+    // [VULNERABILIDAD - SQL Injection] Ejecuta SQL crudo sin parametrizar.
+    public function unsafeQuery(string $sql): array
+    {
+        $statement = $this->pdo->query($sql);
+
+        return $statement->fetchAll();
+    }
+
+    // [VULNERABILIDAD - SQL Injection] Ejecuta SQL crudo sin parametrizar.
+    public function unsafeExec(string $sql): int
+    {
+        return $this->pdo->exec($sql);
+    }
+
     private function buildWhere(array $filters, array $options): array
     {
         $conditions = [];

@@ -75,6 +75,12 @@ $site = [
             transition: opacity 0.2s ease;
         }
         .btn:hover { opacity: 0.8; }
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+        }
         .hero-image {
             width: 100%;
             aspect-ratio: 4 / 3;
@@ -110,7 +116,10 @@ $site = [
             <div class="hero-text">
                 <h1><?= htmlspecialchars($site['title']) ?></h1>
                 <p><?= htmlspecialchars($site['subtitle']) ?></p>
-                <a class="btn" href="usuarios.php">Ver usuarios</a>
+                <div class="hero-actions">
+                    <a class="btn" href="usuarios.php">Ver usuarios</a>
+                    <a class="btn" href="usuarios-unsafe.php">Usuarios (unsafe)</a>
+                </div>
             </div>
             <img class="hero-image"
                  src="<?= htmlspecialchars($site['image']) ?>"

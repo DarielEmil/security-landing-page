@@ -257,6 +257,58 @@ public sealed class DatabaseService
             .ToList();
     }
 
+    // [VULNERABILIDAD - SQL Injection] Ejecuta SQL crudo sin parametrizar.
+    // Solo para UsuariosUnsafe. NO usar en código real.
+    public async Task<List<Dictionary<string, object?>>> UnsafeQueryAsync(
+        string sql,
+        CancellationToken cancellationToken = default)
+    {
+        await using var connection = new SqlConnection(_options.BuildConnectionString());
+        await connection.OpenAsync(cancellationToken);
+
+        await using var command = new SqlCommand(sql, connection);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+
+        var names = new string[reader.FieldCount];
+        for (var index = 0; index < reader.FieldCount; index++)
+        {
+            names[index] = reader.GetName(index);
+        }
+
+        var rows = new List<Dictionary<string, object?>>();
+
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            var row = new Dictionary<string, object?>(reader.FieldCount, StringComparer.Ordinal);
+
+            for (var index = 0; index < reader.FieldCount; index++)
+            {
+                row[names[index]] = await reader.IsDBNullAsync(index, cancellationToken)
+                    ? null
+                    : reader.GetValue(index);
+            }
+
+            rows.Add(row);
+        }
+
+        return rows;
+    }
+
+    // [VULNERABILIDAD - SQL Injection] Ejecuta SQL crudo sin parametrizar.
+    // Solo para UsuariosUnsafe. NO usar en código real.
+    public async Task<int> UnsafeExecuteAsync(
+        string sql,
+        CancellationToken cancellationToken = default)
+    {
+        await using var connection = new SqlConnection(_options.BuildConnectionString());
+        await connection.OpenAsync(cancellationToken);
+
+        await using var command = new SqlCommand(sql, connection);
+
+        return await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
     private async Task<List<Dictionary<string, object?>>> ExecuteReaderAsync(
         string sql,
         List<SqlParameter> parameters,

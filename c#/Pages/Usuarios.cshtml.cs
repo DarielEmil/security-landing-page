@@ -66,6 +66,8 @@ public sealed class UsuariosModel : PageModel
 
     public List<string> Provinces { get; private set; } = new();
 
+    public IReadOnlyList<PageItem> PageItems { get; private set; } = new List<PageItem>();
+
     public async Task OnGetAsync(string? q, string? province, string? sort, string? dir, [FromQuery(Name = "page")] int page = 1, CancellationToken cancellationToken = default)
     {
         Search = (q ?? string.Empty).Trim();
@@ -92,6 +94,8 @@ public sealed class UsuariosModel : PageModel
         Total = await _db.CountAsync(UsersTable, filters, new SelectOptions { Search = searchOptions }, cancellationToken);
         TotalPages = Math.Max(1, (int)Math.Ceiling(Total / (double)PerPage));
         PageNumber = Math.Min(PageNumber, TotalPages);
+
+        PageItems = BuildPageItems(PageNumber, TotalPages);
 
         var rows = await _db.SelectAsync(UsersTable, filters, new SelectOptions
         {
@@ -203,6 +207,56 @@ public sealed class UsuariosModel : PageModel
         }
 
         return Redirect(location);
+    }
+
+    public string PageUrl(int page)
+        => BuildUrl(Search, Province, Sort, Direction, Math.Max(1, Math.Min(TotalPages, page)));
+
+    private static IReadOnlyList<PageItem> BuildPageItems(int page, int totalPages)
+    {
+        if (totalPages <= 7)
+        {
+            return Enumerable.Range(1, totalPages).Select(n => new PageItem(n)).ToList();
+        }
+
+        if (page <= 4)
+        {
+            return new List<PageItem>
+            {
+                new(1),
+                new(2),
+                new(3),
+                new(4),
+                new(5),
+                PageItem.Ellipsis,
+                new(totalPages),
+            };
+        }
+
+        if (page >= totalPages - 3)
+        {
+            return new List<PageItem>
+            {
+                new(1),
+                PageItem.Ellipsis,
+                new(totalPages - 4),
+                new(totalPages - 3),
+                new(totalPages - 2),
+                new(totalPages - 1),
+                new(totalPages),
+            };
+        }
+
+        return new List<PageItem>
+        {
+            new(1),
+            PageItem.Ellipsis,
+            new(page - 1),
+            new(page),
+            new(page + 1),
+            PageItem.Ellipsis,
+            new(totalPages),
+        };
     }
 
     public string SortLink(string column, string label)
@@ -379,6 +433,13 @@ public sealed class UsuariosModel : PageModel
 }
 
 public sealed record FlashMessage(string Type, string Message);
+
+public sealed record PageItem(int? Number)
+{
+    public static PageItem Ellipsis { get; } = new(null);
+
+    public bool IsEllipsis => Number is null;
+}
 
 public sealed record UserRow(string Id, string Name, string Email, string Phone, string Province, object? CreatedAt)
 {

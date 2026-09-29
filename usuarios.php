@@ -209,6 +209,41 @@ $sortLink = static function (string $column, string $label) use ($baseParams, $s
     return '<a class="sort-link" href="' . e($href) . '">' . e($label) . $indicator . '</a>';
 };
 
+function pageUrl(int $n): string
+{
+    global $baseParams;
+
+    return urlWith(array_merge($baseParams, ['page' => $n]));
+}
+
+/**
+ * @return array<int, int|string>
+ */
+function pageItems(int $page, int $totalPages): array
+{
+    if ($totalPages <= 7) {
+        return range(1, $totalPages);
+    }
+
+    if ($page <= 4) {
+        return [1, 2, 3, 4, 5, '…', $totalPages];
+    }
+
+    if ($page >= $totalPages - 3) {
+        return [
+            1,
+            '…',
+            $totalPages - 4,
+            $totalPages - 3,
+            $totalPages - 2,
+            $totalPages - 1,
+            $totalPages,
+        ];
+    }
+
+    return [1, '…', $page - 1, $page, $page + 1, '…', $totalPages];
+}
+
 $prevUrl = urlWith(array_merge($baseParams, ['page' => max(1, $page - 1)]));
 $nextUrl = urlWith(array_merge($baseParams, ['page' => min($totalPages, $page + 1)]));
 ?>
@@ -361,11 +396,30 @@ $nextUrl = urlWith(array_merge($baseParams, ['page' => min($totalPages, $page + 
         .empty { padding: 2.5rem 1rem; text-align: center; color: var(--muted); }
         .pagination {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             gap: 1rem;
             margin-top: 1.25rem;
             font-size: 0.9375rem;
             color: var(--muted);
+        }
+        .pagination .pages {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        .pagination .page-link {
+            min-width: 2rem;
+            padding: 0.25rem 0.375rem;
+            text-align: center;
+        }
+        .pagination .current {
+            font-weight: 700;
+            color: var(--text);
+        }
+        .pagination .ellipsis {
+            color: var(--muted);
+            padding: 0.25rem 0.125rem;
         }
         .pagination a { color: var(--text); text-decoration: none; }
         .pagination a:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -491,6 +545,17 @@ $nextUrl = urlWith(array_merge($baseParams, ['page' => min($totalPages, $page + 
             <?php if ($totalPages > 1): ?>
                 <a class="<?= $page <= 1 ? 'disabled' : '' ?>" href="<?= e($prevUrl) ?>">Anterior</a>
                 <span>Página <?= $page ?> de <?= $totalPages ?> (<?= $total ?> registros)</span>
+                <div class="pages">
+                    <?php foreach (pageItems($page, $totalPages) as $item): ?>
+                        <?php if ($item === '…'): ?>
+                            <span class="ellipsis">…</span>
+                        <?php elseif ((int) $item === $page): ?>
+                            <span class="current"><?= (int) $item ?></span>
+                        <?php else: ?>
+                            <a class="page-link" href="<?= e(pageUrl((int) $item)) ?>"><?= (int) $item ?></a>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </div>
                 <a class="<?= $page >= $totalPages ? 'disabled' : '' ?>" href="<?= e($nextUrl) ?>">Siguiente</a>
             <?php else: ?>
                 <span><?= $total ?> registros</span>

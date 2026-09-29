@@ -149,11 +149,30 @@
         .empty { padding: 2.5rem 1rem; text-align: center; color: var(--muted); }
         .pagination {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             gap: 1rem;
             margin-top: 1.25rem;
             font-size: 0.9375rem;
             color: var(--muted);
+        }
+        .pagination .pages {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        .pagination .page-link {
+            min-width: 2rem;
+            padding: 0.25rem 0.375rem;
+            text-align: center;
+        }
+        .pagination .current {
+            font-weight: 700;
+            color: var(--text);
+        }
+        .pagination .ellipsis {
+            color: var(--muted);
+            padding: 0.25rem 0.125rem;
         }
         .pagination a { color: var(--text); text-decoration: none; }
         .pagination a:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -287,6 +306,23 @@
             {
                 <a class="@(Model.PageNumber <= 1 ? "disabled" : string.Empty)" href="@Model.PrevUrl">Anterior</a>
                 <span>Página @Model.PageNumber de @Model.TotalPages (@Model.Total registros)</span>
+                <div class="pages">
+                    @foreach (var item in Model.PageItems)
+                    {
+                        if (item.IsEllipsis)
+                        {
+                            <span class="ellipsis">…</span>
+                        }
+                        else if (item.Number == Model.PageNumber)
+                        {
+                            <span class="current">@item.Number.Value</span>
+                        }
+                        else
+                        {
+                            <a class="page-link" href="@Model.PageUrl(item.Number.Value)">@item.Number.Value</a>
+                        }
+                    }
+                </div>
                 <a class="@(Model.PageNumber >= Model.TotalPages ? "disabled" : string.Empty)" href="@Model.NextUrl">Siguiente</a>
             }
             else
